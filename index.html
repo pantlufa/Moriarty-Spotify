@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Playlists</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e3d6ef;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .playlist {
+            margin: 20px 0;
+            width: 300px;
+        }
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Playlist's</h1>
+    <div id="playlists"></div>
+
+    <script>
+        
+        const getAccessToken = () => {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            return params.get('access_token');
+        };
+
+        const accessToken = getAccessToken();
+
+        
+        const fetchPlaylists = () => {
+            if (accessToken) {
+                fetch('https://api.spotify.com/v1/me/playlists', {
+                    headers: {
+                        'Authorization': 'Bearer ' + accessToken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const playlistsContainer = document.getElementById('playlists');
+                    
+                    
+                    playlistsContainer.innerHTML = '';
+
+                    data.items.forEach(playlist => {
+                        const playlistDiv = document.createElement('div');
+                        playlistDiv.classList.add('playlist');
+                        playlistDiv.innerHTML = `
+                            <iframe src="https://open.spotify.com/embed/playlist/${playlist.id}" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+                            <p>${playlist.name}</p>
+                        `;
+                        playlistsContainer.appendChild(playlistDiv);
+                    });
+                })
+                .catch(error => console.error('Erro ao buscar playlists', error));
+            } else {
+                
+                window.location.href = authUrl;
+            }
+        };
+
+        
+        fetchPlaylists();
+
+        
+        setInterval(fetchPlaylists, 300000); 
+    </script>
+</body>
+</html>
